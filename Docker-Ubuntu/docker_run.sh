@@ -1,0 +1,1 @@
+docker run --rm -p 22:22 -d --name ubuntu ubuntu_ssh 
