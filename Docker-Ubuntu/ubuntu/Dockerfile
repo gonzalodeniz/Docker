@@ -1,6 +1,6 @@
 FROM ubuntu:latest
 
-RUN apt update && apt install  openssh-server sudo -y
+RUN apt update && apt install  openssh-server sudo python3-simplejson -y
 
 # Permit root login and change root password
 RUN echo "root:root" | chpasswd && \
