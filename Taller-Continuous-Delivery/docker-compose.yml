@@ -1,0 +1,73 @@
+version: '3'
+services:
+  jenkins:    
+    build:
+      context: ./dockerfile_jenkins
+      dockerfile: Dockerfile
+    container_name: jenkins
+    restart: always
+    hostname: jenkins.local
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - tomcatwebapps:/tmp/tomcatbridge
+    ports:
+      - 8080:8080
+      - 50000:50000
+    networks:
+      - jenkins-network
+    
+  gitlab:
+    image: gitlab/gitlab-ce:latest
+    container_name: gitlab
+    restart: always
+    hostname: gitlab.local
+    shm_size: '256m'    
+    environment:
+      - GITLAB_OMNIBUS_CONFIG=external_url 'http://gitlab.local'; gitlab_rails['lfs_enabled'] = true;
+      - GITLAB_ROOT_EMAIL=root@local
+      - GITLAB_ROOT_PASSWORD=1q2w3e4R.    
+    volumes:
+      - ./gitlab_config:/etc/gitlab
+      - ./gitlab_logs:/var/log/gitlab
+      - ./gitlab_data:/var/opt/gitlab
+    ports:
+      - "8081:80"
+      - "8444:443"
+      - "8023:22"
+    networks:
+      - jenkins-network
+
+  nexus:
+    image: sonatype/nexus3
+    container_name: nexus
+    restart: always
+    hostname: nexus.local
+    ports: 
+      - 18081:8081
+      - 18082:8082
+    volumes:
+      - nexus-data:/nexus-data
+    networks:
+      - jenkins-network
+
+  tomcat:
+    image: tomcat:8.5.50-jdk8-openjdk-slim
+    container_name: tomcat
+    restart: always
+    hostname: tomcat.local
+    volumes:
+      - tomcatwebapps:/usr/local/tomcat/webapps
+    ports:
+      - 8083:8080
+    networks:
+      - jenkins-network      
+
+networks:
+  jenkins-network:
+
+volumes:
+  jenkins_home:
+  tomcatwebapps:
+  nexus-data:
+
+
